@@ -1,0 +1,26 @@
+version: 0.2
+
+env:
+  variables:
+    C7N_FUNCTIONAL: true
+  exported-variables:
+  - C7N_FUNCTIONAL
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+    - wget https://releases.hashicorp.com/terraform/0.12.29/terraform_0.12.29_linux_amd64.zip
+    - unzip terraform*.zip
+    - mv terraform /bin
+    - pip install -r requirements.txt
+    - pip install -U git+https://github.com/marcoceppi/pytest-terraform.git@issue/9#egg=pytest-terraform
+  build:
+    commands:
+    - pytest tests/test_sqs.py -k "test_sqs_remove_matched or test_sqs_delete" --tf-mod-dir=tests/data/terraform --tf-plugin-dir=../.tfcache
+  post_build:
+    commands:
+    - echo "aws_nuke"
+cache:
+  paths:
+    - tests/data/terraform/.tfcache
