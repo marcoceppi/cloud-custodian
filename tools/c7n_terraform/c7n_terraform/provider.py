@@ -23,9 +23,9 @@ class Terraform(Provider):
     def initialize_policies(self, policy_collection, options):
         return policy_collection
 
-    # def get_session_factory(self, options):
-    #     """Get a credential/session factory for api usage."""
-    #     return partial(Session, project_id=options.account_id)
+    def get_session_factory(self, options):
+        """Get a credential/session factory for api usage."""
+        return None
 
 
 resources = Terraform.resources

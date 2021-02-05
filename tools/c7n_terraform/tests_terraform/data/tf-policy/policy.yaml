@@ -1,0 +1,3 @@
+policies:
+- name: test-tf
+  resource: tf.resource

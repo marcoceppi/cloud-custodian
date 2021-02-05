@@ -7,6 +7,25 @@ from c7n.query import sources, MaxResourceLimit
 log = logging.getLogger('c7n_terraform.query')
 
 
+@sources.register('describe-tf')
+class DescribeSource:
+
+    def __init__(self, manager):
+        self.manager = manager
+        #self.query = ResourceQuery(manager.session_factory)
+
+    def get_resources(self, query):
+        if query is None:
+            query = {}
+        return self.query.filter(self.manager, **query)
+
+    def get_permissions(self):
+        return
+
+    def augment(self, resources):
+        return resources
+
+
 class QueryResourceManager(ResourceManager):
 
     def __init__(self, data, options):
