@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 
+import copy
 import hcl2
 
 
@@ -20,7 +21,15 @@ class Block(dict):
     __slots__ = ()
 
     def __getattr__(self, k):
+        if k not in self and k.startswith('__'):
+            raise AttributeError()
+
         return self[k]
+
+    def to_dict(self):
+        data = copy.deepcopy(self)
+        del data['path']
+        return data
 
 
 class VariableResolver:

@@ -1,3 +1,8 @@
 policies:
 - name: test-tf
   resource: tf.resource
+  filters:
+  - type: "value"
+    op: "contains"
+    value: "public-read"
+    key: "acl"

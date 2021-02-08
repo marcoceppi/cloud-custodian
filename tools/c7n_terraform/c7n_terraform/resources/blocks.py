@@ -12,3 +12,8 @@ from c7n_terraform.query import QueryResourceManager
 @resources.register('data')
 class Data(QueryResourceManager):
     pass
+
+
+@resources.register('resource')
+class Resource(QueryResourceManager):
+    pass
