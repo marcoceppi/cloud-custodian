@@ -52,6 +52,7 @@ class QueryMeta(type):
 # TODO: Make a NOOP Cache manager
 CacheManager = MagicMock()
 CacheManager.load.side_effect = [False]
+CacheManager.size.return_value = 0
 
 class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
 
