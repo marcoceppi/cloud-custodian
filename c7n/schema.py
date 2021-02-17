@@ -416,11 +416,14 @@ def process_resource(
         {'type': 'object', 'additionalProperties': False,
          'properties': {'not': {'$ref': block_fref}}}])
 
+    resource_property = (
+        {'type': 'string', 'pattern': type_name} if hasattr(resource_type, 'pattern')
+        else {'enum': [type_name]})
     resource_policy = {
         'allOf': [
             {'$ref': '#/definitions/policy'},
             {'properties': {
-                'resource': {'enum': [type_name]},
+                'resource': resource_property,
                 'filters': {
                     'type': 'array',
                     'items': {'anyOf': filter_refs}},

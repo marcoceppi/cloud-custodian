@@ -26,10 +26,9 @@ class DescribeSource:
         resolver = VariableResolver(self.query)
         resolver.resolve()
 
-    def get_resources(self, query):
-        if query is None:
-            query = {}
-        return [block.to_dict() for block in self.query.iter_blocks(tf_kind=query)]
+    def get_resources(self, block):
+        cmd = self.query.iter_blocks if block else self.query.blocks
+        return [block.to_dict() for block in cmd(tf_kind=block)]
 
     def get_permissions(self):
         return

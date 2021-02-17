@@ -1,6 +1,6 @@
 policies:
 - name: test-tf
-  resource: tf.resource
+  resource: tf.resource.aws_s3_bucket
   filters:
   - type: "value"
     op: "contains"

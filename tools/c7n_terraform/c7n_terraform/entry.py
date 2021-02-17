@@ -1,7 +1,4 @@
-import logging
-
-# register provider
-import c7n_terraform.provider # noqa
+import c7n_terraform.provider  # noqa
 
 
 def initialize_tf():
@@ -9,3 +6,4 @@ def initialize_tf():
 
     # load shared registered resources
     import c7n_terraform.query
+    import c7n_terraform.resources.blocks  # noqa

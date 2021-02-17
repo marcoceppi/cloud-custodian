@@ -113,9 +113,10 @@ def get_resource_class(resource_type):
         raise KeyError(
             "Invalid cloud provider: %s" % provider_name)
 
-    if resource_type not in provider.resource_map:
+    factory = provider.resources.get(resource)
+    if not factory:
         raise KeyError("Invalid resource: %s for provider: %s" % (
             resource, provider_name))
-    factory = provider.resources.get(resource)
+
     assert factory, "Resource:%s not loaded" % resource_type
     return factory

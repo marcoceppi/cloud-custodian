@@ -30,12 +30,54 @@ class Session:
         return MagicMock()
 
 
+class DynamicPluginRegistry(PluginRegistry):
+    """Extends PluginRegistry to allow for a fallback other than None
+    Will also test if a key is a regular expression pattern and matches
+    the name requested
+    """
+
+    def __init__(self, plugin_type, fallback=None):
+        super().__init__(plugin_type)
+        self.fallback = fallback
+
+    def get(self, name):
+        factory = super().get(name)
+
+        if factory:
+            return factory
+
+        return next(
+            (
+                v
+                for k, v in self._factories.items()
+                if hasattr(v, "pattern") and v.pattern.match(name)
+            ),
+            self.get_fallback(),
+        )
+
+    def get_fallback(self):
+        if not self.fallback:
+            return None
+        return self._factories.get(self.fallback)
+
+    def register(self, name, **kwargs):
+        matcher = kwargs.pop("match", None)
+        wrapper = super().register(name, **kwargs)
+
+        def new_wrapper(klass):
+            newcls = wrapper(klass)
+            if matcher:
+                newcls.pattern = matcher
+
+        return new_wrapper
+
+
 @clouds.register('tf')
 class Terraform(Provider):
 
     display_name = 'Terraform'
     resource_prefix = 'tf'
-    resources = PluginRegistry('%s.resources' % resource_prefix)
+    resources = DynamicPluginRegistry("%s.resources" % resource_prefix, "tf.resource.*")
     resource_map = ResourceMap
 
     def initialize(self, options):
