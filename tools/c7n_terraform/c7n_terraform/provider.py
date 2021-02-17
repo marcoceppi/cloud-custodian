@@ -6,8 +6,6 @@ from unittest.mock import MagicMock
 from c7n.registry import PluginRegistry
 from c7n.provider import Provider, clouds
 
-from functools import partial
-
 from c7n_terraform.resources.resource_map import ResourceMap
 
 
@@ -23,7 +21,7 @@ class Session:
         Returns:
             str: The object representation.
         """
-        return '<tf-session>'
+        return "<tf-session>"
 
     def client(self, service_name, version, component, **kw):
 
@@ -72,11 +70,11 @@ class DynamicPluginRegistry(PluginRegistry):
         return new_wrapper
 
 
-@clouds.register('tf')
+@clouds.register("tf")
 class Terraform(Provider):
 
-    display_name = 'Terraform'
-    resource_prefix = 'tf'
+    display_name = "Terraform"
+    resource_prefix = "tf"
     resources = DynamicPluginRegistry("%s.resources" % resource_prefix, "tf.resource.*")
     resource_map = ResourceMap
 
