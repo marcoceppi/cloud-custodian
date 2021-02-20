@@ -22,21 +22,14 @@ CacheManager.size.return_value = 0
 class DescribeSource:
     def __init__(self, manager):
         self.manager = manager
-        tmp = Path(
-            "/home/marco/Projects/stacklet/cloud-custodian/tools/c7n_terraform/tests_terraform/data/aws-complete"
-        )
-        data = Parser().parse_module(tmp)
+        data = Parser().parse_module(self.manager.ctx.path)
         self.query = TerraformVisitor(data, tmp)
         self.query.visit()
-        resolver = VariableResolver(self.query)
-        resolver.resolve()
+        VariableResolver(self.query).resolve()
 
     def get_resources(self, block):
         cmd = self.query.iter_blocks if block else self.query.blocks
         return [block.to_dict() for block in cmd(tf_kind=block)]
-
-    def get_permissions(self):
-        return
 
     def augment(self, resources):
         return resources
@@ -61,7 +54,7 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
         self._cache = CacheManager
 
     def get_permissions(self):
-        return self.source.get_permissions()
+        return None
 
     def get_source(self, source_type):
         return sources.get(source_type)(self)
