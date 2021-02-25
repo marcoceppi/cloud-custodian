@@ -9,6 +9,7 @@ from rich.logging import RichHandler
 
 from c7n.exceptions import PolicyValidationError
 from c7n.policy import PolicyCollection, load as policy_load
+from c7n_terraform.console.base import console
 
 
 log = logging.getLogger("c7n_terraform.commands")
@@ -84,5 +85,5 @@ def setup_logging(level):
         level=log_level,
         format="%(message)s",
         datefmt="[%X]",
-        handlers=[RichHandler(rich_tracebacks=True)],
+        handlers=[RichHandler(console=console, rich_tracebacks=True)],
     )

@@ -17,13 +17,14 @@ rich = "^9.11.1"
 click = "^7.1.2"
 python-hcl2 = "^2.0"
 typer = "^0.3.2"
+importlib-metadata = "^3.4.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "~5.3.5"
 c7n = {path = "../..", develop = true}
 
 [tool.poetry.scripts]
-c7n-terraform = 'c7n_terraform.cli:app'
+custodian-ci = 'c7n_terraform.cli:app'
 
 [build-system]
 requires = ["poetry>=0.12"]

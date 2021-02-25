@@ -114,7 +114,7 @@ test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
 name = "importlib-metadata"
 version = "3.4.0"
 description = "Read metadata from Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -387,7 +387,7 @@ python-versions = "*"
 name = "zipp"
 version = "3.4.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -398,7 +398,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "b63a3632833f161800619422ba14766dfe90298bddf0a3a198fc0f181fc1ad92"
+content-hash = "40711529283334723c7f99f3d6e5c24ed30e3f5142388b323f7c1f7cdd3c7350"
 
 [metadata.files]
 argcomplete = [

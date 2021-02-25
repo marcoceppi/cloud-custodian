@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import List
 
 from c7n_terraform.commands import load_policies, setup_logging
+from c7n_terraform.console.base import Status
+from c7n_terraform.console.printer import FullPrinter
 
 
 app = typer.Typer()
@@ -19,6 +21,12 @@ log = logging.getLogger("c7n_terraform.cli")
 class OutputReporter(str, Enum):
     junit = "junit"
     json = "json"
+
+
+class OutputPrinter(str, Enum):
+    full = "full"
+    simple = "simple"
+    report = "report"
 
 
 @app.command()
@@ -34,11 +42,14 @@ def run(
     policies: List[Path] = typer.Option(
         ..., "--policy", "-p", help="One or more policies sources for checking"
     ),
-    verbose: int = typer.Option(3, "--verbose", "-v", count=True),
+    verbose: int = typer.Option(0, "--verbose", "-v", count=True),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Mute output"),
     color: bool = typer.Option(True, help="Show rich, colorized output"),
     reporter: OutputReporter = typer.Option(
-        OutputReporter.junit, help="Output formatting, requires --output"
+        OutputReporter.junit, help="File output format, requires --output"
+    ),
+    printer: OutputPrinter = typer.Option(
+        OutputPrinter.full, help="Print formater, mutually exclusive to --quiet"
     ),
     output: Path = typer.Option(
         None, "--output", "-o", help="File to output run data to"
@@ -58,7 +69,7 @@ def run(
     # Loop over each module and throw policies at it
     # Collect and display output
 
-    setup_logging(verbose if not quiet else 0)
+    setup_logging(verbose + 3 if not quiet else 0)
     policy_files = []
     modules = set()
 
@@ -85,13 +96,30 @@ def run(
 
     all_policies = load_policies(policy_files)
     collection = all_policies.filter(policy_filter or [], resource_filter or [])
-    rich.print(policy_files)
-    rich.print(collection.policies)
-    rich.print(modules)
 
-    for module in modules:
-        log.info(f"Evaluating {str(module)}.")
+    # run_ci(modules, policies, ...)
+    printer = FullPrinter()
+    [printer.add_test_case(str(m)) for m in modules]
+
+    for module_path in modules:
+        name = str(module_path)
+        printer.start_test_case(name)
+        log.debug(f"Evaluating {name}.")
+
         for policy in collection:
-            log.info(f" - Running Policy: {policy.name}")
-            policy.ctx.options.path = module
-            policy()
+            policy.ctx.options.path = module_path
+            resources, runtime, actiontime = policy()
+
+            log.debug(
+                f" - Policy: {policy.name} count: {len(resources)} time: {runtime:.5f} seconds"
+            )
+
+            if not resources:
+                printer.add_test_result(name, Status.success, policy, [])
+                continue
+
+            printer.add_test_result(name, Status.fail, policy, resources)
+
+        printer.complete_test_case(name)
+
+    printer.print_summary()
