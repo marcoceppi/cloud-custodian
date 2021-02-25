@@ -28,7 +28,6 @@ class Block(dict):
 
     def to_dict(self):
         data = copy.deepcopy(self)
-        del data['path']
         return data
 
 

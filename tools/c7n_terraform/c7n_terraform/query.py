@@ -87,18 +87,14 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
     def resources(self, query=None):
         q = self.data.get("resource").replace("tf.", "")
         resources = self.source.get_resources(q)
-
-        resource_count = len(resources)
-        resources = self.filter_resources(resources)
-
-        # Check if we're out of a policies execution limits.
-        if self.data == self.ctx.policy.data:
-            self.check_resource_limit(len(resources), resource_count)
-        return resources
+        return self.filter_resources(resources)
 
     def filter_resources(self, resources, event=None):
-        to_filter = [resource.data for resource in resources]
-        return super().filter_resources(to_filter, event)
+        matched_resources = []
+        for resource in resources:
+            if len(super().filter_resources([resource.data], event)) > 0:
+                matched_resources.append(resource)
+        return matched_resources
 
     def check_resource_limit(self, selection_count, population_count):
         """Check if policy's execution affects more resources then its limit."""
