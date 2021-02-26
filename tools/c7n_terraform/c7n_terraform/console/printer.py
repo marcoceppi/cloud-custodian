@@ -106,7 +106,7 @@ class FullPrinter(Printer):
 
         self._grid[name].add_row(
             f"[bold]{policy.name}[/]\n\n[bold]Description: [/]{policy.data.get('description', '')}",
-            RenderGroup(*[source_contexts(resource) for resource in resources]),
+            RenderGroup(*[source_contexts(resource, prefix=name) for resource in resources]),
         )
 
         return c
@@ -116,6 +116,7 @@ class FullPrinter(Printer):
         self.console.print("")
 
     def print_summary(self):
+        cases = self.cases.values()
         for case in self.cases.values():
             failures = any([result["result"] != Status.success for result in case.results])
 

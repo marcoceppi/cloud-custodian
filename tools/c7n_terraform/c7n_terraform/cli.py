@@ -101,14 +101,20 @@ def run(
     printer = FullPrinter()
     [printer.add_test_case(str(m)) for m in modules]
 
-    for module_path in modules:
+    paths = sorted(modules)
+
+    for module_path in paths:
         name = str(module_path)
         printer.start_test_case(name)
         log.debug(f"Evaluating {name}.")
 
         for policy in collection:
             policy.ctx.options.path = module_path
-            resources, runtime, actiontime = policy()
+            try:
+                resources, runtime, actiontime = policy()
+            except Exception:
+                printer.add_test_result(name, Status.error, policy, [])
+                continue
 
             log.debug(
                 f" - Policy: {policy.name} count: {len(resources)} time: {runtime:.5f} seconds"

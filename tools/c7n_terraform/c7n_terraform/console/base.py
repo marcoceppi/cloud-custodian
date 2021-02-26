@@ -13,6 +13,7 @@ style = {
     "pass": "[green bold]•[/]",
     "skip": "[dark grey dim bold]•[/]",
     "fail": "[red bold]F[/]",
+    "error": "[red bold]E[/]",
 }
 
 
@@ -20,6 +21,7 @@ class Status:
     success = "pass"
     skip = "skip"
     fail = "fail"
+    error = "error"
 
     @staticmethod
     def icon(status):
@@ -51,7 +53,7 @@ console = Console(theme=theme, log_path=False)
 
 
 @render_group()
-def source_contexts(resource, before=3, after=3):
+def source_contexts(resource, before=3, after=3, prefix=None):
     source = resource.get("source")
     data = resource.get("data", {})
     filters = data.get("c7n:MatchedFilters")
@@ -69,9 +71,20 @@ def source_contexts(resource, before=3, after=3):
     matches = [ln for ln, line in source["lines"] if extract_token(line) in filters]
 
     if not matches:
-        return
+        matches = [source["start"]]
 
-    yield Text(str(resource["path"]))
+    file_name = None
+
+    if prefix:
+        try:
+            file_name = resource["path"].relative_to(prefix)
+        except ValueError:
+            pass
+
+    if not file_name:
+        file_name = resource["path"]
+
+    yield Text(str(file_name))
 
     for ln in matches:
         start = ln - before
