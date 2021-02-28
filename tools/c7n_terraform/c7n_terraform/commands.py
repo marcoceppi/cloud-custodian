@@ -7,6 +7,7 @@ import logging
 
 from rich.logging import RichHandler
 
+from c7n.provider import clouds
 from c7n.exceptions import PolicyValidationError
 from c7n.policy import PolicyCollection, load as policy_load
 from c7n_terraform.console.base import console
@@ -63,6 +64,19 @@ def load_policies(paths):
         else:
             log.debug("Loaded file {}. Contains {} policies".format(p, len(collection)))
             policies = policies + collection
+
+        # provider initialization
+        provider_policies = {}
+        for p in policies:
+            provider_policies.setdefault(p.provider_name, []).append(p)
+
+        policies = PolicyCollection.from_data({}, Options())
+        for provider_name in provider_policies:
+            provider = clouds[provider_name]()
+            p_options = provider.initialize(Options())
+            policies += provider.initialize_policies(
+                PolicyCollection(provider_policies[provider_name], p_options),
+                p_options)
 
     return policies
 
