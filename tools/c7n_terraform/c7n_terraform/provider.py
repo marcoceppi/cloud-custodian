@@ -82,6 +82,11 @@ class Terraform(Provider):
         return options
 
     def initialize_policies(self, policy_collection, options):
+        """Update the default execution mode to static if it's not already set"""
+        for p in policy_collection:
+            if not p.data.get('mode'):
+                p.data['mode'] = {'type': 'static'}
+
         return policy_collection
 
     def get_session_factory(self, options):
