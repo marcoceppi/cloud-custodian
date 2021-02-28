@@ -6,6 +6,7 @@ from rich.console import RenderGroup
 from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
+from rich.rule import Rule
 
 from c7n_terraform.console.base import console as default_console, source_contexts, Status
 
@@ -35,6 +36,7 @@ class Printer:
     def __init__(self, console=None):
         self.console = console or default_console
         self.cases = {}
+        self.summary = {}
 
     def add_test_case(self, name):
         if name not in self.cases:
@@ -51,6 +53,9 @@ class Printer:
 
     def add_test_result(self, name, result, policy, resources):
         self.cases[name].add_result(result, policy, resources)
+        if result not in self.summary:
+            self.summary[result] = 0
+        self.summary[result] += 1
         return self.cases[name]
 
     def complete_test_case(self, name):
@@ -115,7 +120,23 @@ class FullPrinter(Printer):
         super().complete_test_case(name)
         self.console.print("")
 
+    def build_summary_title(self):
+        title = Text()
+        cur = 0
+        length = len(self.summary)
+        for result, count in self.summary.items():
+            if count < 1:
+                continue
+            title.append(f"{count} {result.capitalize()}", style=result)
+            cur += 1
+            if cur < length:
+                title.append(", ")
+
+        return title
+
     def print_summary(self):
+        self.console.print(Rule(self.build_summary_title()))
+
         cases = self.cases.values()
         for case in self.cases.values():
             failures = any([result["result"] != Status.success for result in case.results])

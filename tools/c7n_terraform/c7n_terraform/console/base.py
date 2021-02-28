@@ -33,6 +33,10 @@ class Status:
 
 theme = Theme(
     {
+        "pass": "green",
+        "skip": "bright_black",
+        "fail": "red",
+        "error": "red",
         "info": "dim cyan",
         "warning": "magenta",
         "danger": "bold red",
