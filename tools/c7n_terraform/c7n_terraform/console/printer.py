@@ -135,7 +135,7 @@ class FullPrinter(Printer):
         return title
 
     def print_summary(self):
-        self.console.print(Rule(self.build_summary_title()))
+        self.console.print(Panel(Rule(self.build_summary_title()), width=150, box=box.SIMPLE))
 
         cases = self.cases.values()
         for case in self.cases.values():
