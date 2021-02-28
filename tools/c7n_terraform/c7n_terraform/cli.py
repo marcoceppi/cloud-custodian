@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import sys
 import typer
 import rich
 import logging
@@ -99,6 +100,8 @@ def run(
 
     # run_ci(modules, policies, ...)
     printer = FullPrinter()
+
+    # Pre-load test cases to make line lengths good
     [printer.add_test_case(str(m)) for m in modules]
 
     paths = sorted(modules)
@@ -123,9 +126,9 @@ def run(
             if not resources:
                 printer.add_test_result(name, Status.success, policy, [])
                 continue
-
             printer.add_test_result(name, Status.fail, policy, resources)
-
         printer.complete_test_case(name)
-
     printer.print_summary()
+
+    if printer.summary.get(Status.fail, 0) > 0:
+        sys.exit(2)
