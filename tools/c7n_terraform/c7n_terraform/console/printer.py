@@ -1,6 +1,8 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from xml.etree.ElementTree import Element, SubElement, tostring
+
 from rich import box
 from rich.console import RenderGroup
 from rich.table import Table
@@ -152,3 +154,64 @@ class FullPrinter(Printer):
                     width=150,
                 )
             )
+
+
+class JUnitXMLOutputReporter:
+    def __init__(self, printer):
+        self.cases = printer.cases
+        self.root = self.build_root(
+            errors=printer.summary.get(Status.error, 0),
+            failures=printer.summary.get(Status.fail, 0),
+            successes=printer.summary.get(Status.success, 0),
+            time=1,
+        )
+
+    def build_root(self, successes, failures, errors, time):
+        attribs = {
+            "errors": str(errors),
+            "failures": str(failures),
+            "tests": str(len(self.cases)),
+            "time": str(time),
+        }
+
+        return Element("testsuites", attribs)
+
+    def build_test_suite(self, case):
+        attribs = {
+            "id": case.name,
+            "tests": "0",
+            "time": "0.01",
+            "package": case.name,
+            "name": case.name,
+            "hostname": "localhost",
+            "failures": "0",
+            "errors": "0",
+            "tests": str(len(case.results)),
+        }
+
+        ts = Element("testsuite", attribs)
+
+        for result in case.results:
+            case_attr = {
+                "name": result["policy"].name,
+                "status": result["result"],
+                "type": result["result"],
+            }
+            tc = SubElement(ts, "testcase", case_attr)
+            if result["result"] != Status.success:
+                tc.set("classname", ".".join(result["resources"][0]["data_path"]))
+                tc.set("file", str(result["resources"][0]["path"]))
+                tc.set("line", str(result["resources"][0]["source"]["lines"][0][0]))
+
+                tc_attr = {
+                    "message": result["policy"].data.get("description"),
+                    "type": result["result"]
+                }
+
+                tc.append(Element(result["result"], tc_attr))
+        return ts
+
+    def report(self):
+        for case in self.cases.values():
+            self.root.append(self.build_test_suite(case))
+        return b'<?xml version="1.0" encoding="utf-8"?>' + tostring(self.root)

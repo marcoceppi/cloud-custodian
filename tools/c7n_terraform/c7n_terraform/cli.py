@@ -12,7 +12,7 @@ from typing import List
 
 from c7n_terraform.commands import load_policies, setup_logging
 from c7n_terraform.console.base import Status, setup_console
-from c7n_terraform.console.printer import FullPrinter
+from c7n_terraform.console.printer import FullPrinter, JUnitXMLOutputReporter
 
 
 app = typer.Typer()
@@ -130,6 +130,9 @@ def run(
             printer.add_test_result(name, Status.fail, policy, resources)
         printer.complete_test_case(name)
     printer.print_summary()
+
+    if output:
+        output.write_bytes(JUnitXMLOutputReporter(printer).report())
 
     if printer.summary.get(Status.fail, 0) > 0:
         sys.exit(2)

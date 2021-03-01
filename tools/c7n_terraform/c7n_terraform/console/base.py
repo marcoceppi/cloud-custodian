@@ -11,16 +11,16 @@ from rich.rule import Rule
 
 style = {
     "pass": "[green bold]•[/]",
-    "skip": "[dark grey dim bold]•[/]",
-    "fail": "[red bold]F[/]",
+    "skipped": "[dark grey dim bold]•[/]",
+    "failure": "[red bold]F[/]",
     "error": "[red bold]E[/]",
 }
 
 
 class Status:
     success = "pass"
-    skip = "skip"
-    fail = "fail"
+    skip = "skipped"
+    fail = "failure"
     error = "error"
 
     @staticmethod
@@ -34,8 +34,8 @@ class Status:
 theme = Theme(
     {
         "pass": "green",
-        "skip": "bright_black",
-        "fail": "red",
+        "skipped": "bright_black",
+        "failure": "red",
         "error": "red",
         "info": "dim cyan",
         "warning": "magenta",
