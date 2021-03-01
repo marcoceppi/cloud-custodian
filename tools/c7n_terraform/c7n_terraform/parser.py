@@ -27,8 +27,7 @@ class Block(dict):
         return self[k]
 
     def to_dict(self):
-        data = copy.deepcopy(self)
-        return data
+        return copy.deepcopy(self)
 
 
 class VariableResolver:
