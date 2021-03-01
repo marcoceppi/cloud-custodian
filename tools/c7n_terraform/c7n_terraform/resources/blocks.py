@@ -19,6 +19,7 @@ class Resource(QueryResourceManager):
 
 @resources.register("resource.*", match=re.compile(r"resource\..*"))
 class ResourceLookup(QueryResourceManager):
+    id = "_id"
     def resources(self, query=None):
         _, name = self.data.get("resource").rsplit(".", 1)
         resources = self.source.get_resources("resource")

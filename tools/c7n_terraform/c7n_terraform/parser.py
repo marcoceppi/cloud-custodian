@@ -313,6 +313,7 @@ class TerraformVisitor:
         provider_type = next(iter(data_block))
         for name, resource in data_block[provider_type].items():
             data_path = ["resource", provider_type, name]
+            resource["_id"] = ".".join(data_path)
             yield Block(
                 type="resource",
                 provider_type=provider_type,
