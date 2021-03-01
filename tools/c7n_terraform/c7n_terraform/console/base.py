@@ -56,6 +56,21 @@ theme = Theme(
 console = Console(theme=theme, log_path=False)
 
 
+def setup_console(force_color=None):
+    global console
+    kwargs = {
+        "theme": theme,
+        "log_path": False,
+    }
+
+    if force_color is not None:
+        kwargs["force_terminal"] = force_color
+        kwargs["width"] = 151
+        kwargs["no_color"] = not force_color
+
+    console = Console(**kwargs)
+
+
 @render_group()
 def source_contexts(resource, before=3, after=3, prefix=None):
     source = resource.get("source")

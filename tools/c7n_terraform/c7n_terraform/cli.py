@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List
 
 from c7n_terraform.commands import load_policies, setup_logging
-from c7n_terraform.console.base import Status
+from c7n_terraform.console.base import Status, setup_console
 from c7n_terraform.console.printer import FullPrinter
 
 
@@ -45,7 +45,7 @@ def run(
     ),
     verbose: int = typer.Option(0, "--verbose", "-v", count=True),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Mute output"),
-    color: bool = typer.Option(True, help="Show rich, colorized output"),
+    color: bool = typer.Option(None, help="Show rich, colorized output"),
     reporter: OutputReporter = typer.Option(
         OutputReporter.junit, help="File output format, requires --output"
     ),
@@ -70,6 +70,7 @@ def run(
     # Loop over each module and throw policies at it
     # Collect and display output
 
+    setup_console(color)
     setup_logging(verbose + 3 if not quiet else 0)
     policy_files = []
     modules = set()
