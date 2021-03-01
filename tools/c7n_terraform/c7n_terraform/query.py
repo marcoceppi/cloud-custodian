@@ -7,6 +7,7 @@ from c7n.filters import FilterRegistry
 from c7n.query import sources, MaxResourceLimit
 
 from c7n_terraform.parser import Parser, TerraformVisitor, VariableResolver
+from c7n_terraform.filters.value import TerraformValueFilter
 
 
 log = logging.getLogger("c7n_terraform.query")
@@ -57,6 +58,7 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
         super(QueryResourceManager, self).__init__(data, options)
         self.source = self.get_source(self.source_type)
         self._cache = CacheManager
+        self.filter_registry.register("value", TerraformValueFilter)
 
     def get_permissions(self):
         return None
