@@ -23,12 +23,10 @@ CacheManager.size.return_value = 0
 
 @sources.register("describe-tf")
 class DescribeSource:
+    _query_cache = None
+
     def __init__(self, manager):
         self.manager = manager
-        data = Parser().parse_module(self.manager.ctx.path)
-        self.query = TerraformVisitor(data, tmp)
-        self.query.visit()
-        VariableResolver(self.query).resolve()
 
     def get_resources(self, block):
         cmd = self.query.iter_blocks if block else self.query.blocks
@@ -37,6 +35,14 @@ class DescribeSource:
     def augment(self, resources):
         return resources
 
+    @property
+    def query(self):
+        if not self._query_cache:
+            data = Parser().parse_module(self.manager.ctx.options.path)
+            self._query_cache = TerraformVisitor(data, self.manager.ctx.options.path)
+            self._query_cache.visit()
+            VariableResolver(self._query_cache).resolve()
+        return self._query_cache
 
 class QueryMeta(type):
     """metaclass to have consistent action/filter registry for new resources."""
