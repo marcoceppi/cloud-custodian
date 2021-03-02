@@ -23,10 +23,6 @@ class Session:
         """
         return "<tf-session>"
 
-    def client(self, service_name, version, component, **kw):
-
-        return MagicMock()
-
 
 class DynamicPluginRegistry(PluginRegistry):
     """Extends PluginRegistry to allow for a fallback other than None
