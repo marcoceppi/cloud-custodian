@@ -12,7 +12,8 @@ from c7n.query import sources, MaxResourceLimit
 from c7n_terraform.parser import Parser, TerraformVisitor, VariableResolver
 
 
-log = logging.getLogger("c7n_terraform.query")
+log = logging.getLogger("custodian.terraform.query")
+
 # TODO: Make a NOOP Cache manager
 CacheManager = MagicMock()
 CacheManager.load.side_effect = [False]
