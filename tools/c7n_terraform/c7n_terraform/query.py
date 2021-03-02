@@ -26,9 +26,10 @@ class DescribeSource:
     def __init__(self, manager):
         self.manager = manager
 
-    def get_resources(self, block):
-        cmd = self.query.iter_blocks if block else self.query.blocks
-        return [block.to_dict() for block in cmd(tf_kind=block)]
+    def get_resources(self, query):
+        if query is None:
+            return self.query.blocks
+        return list(self.query.iter_blocks(tf_kind=query))
 
     def augment(self, resources):
         return resources
@@ -75,9 +76,6 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
 
     def get_cache_key(self, query):
         return None
-
-    def get_resource(self, resource_info):
-        return self.source.get(resource_info)
 
     @property
     def source_type(self):
