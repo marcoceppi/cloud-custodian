@@ -23,7 +23,7 @@ class ResourceLookup(QueryResourceManager):
 
     def resources(self, query=None):
         _, provider_type = self.data.get("resource").rsplit(".", 1)
-        blocks = self.source.get_resources("resource")
-        resources = self.filter_resources(blocks)
-
-        return [resource for resource in resources if r.provider_type == provider_type]
+        resources = self.source.get_resources("resource")
+        resource_count = len(resources)
+        resources = self.filter_resources(resources)
+        return [r for r in resources if r.provider_type == provider_type]

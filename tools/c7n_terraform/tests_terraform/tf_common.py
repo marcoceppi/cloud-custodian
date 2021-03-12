@@ -4,6 +4,7 @@
 import os
 from pathlib import Path
 
+from c7n.testing import TestUtils
 from c7n_terraform.parser import TerraformVisitor, Parser, VariableResolver
 
 
@@ -34,3 +35,13 @@ def build_visitor(path, resolver=VariableResolver):
         r.resolve()
 
     return visitor
+
+class TfBaseTest(TestUtils):
+
+    def __init__(self, *args, **kwargs):
+        super(TestUtils, self).__init__(*args, **kwargs)
+
+    def _get_policy_config(self, **kw):
+        if 'path' not in kw:
+            kw['path'] = str(data_dir/"aws-complete")
+        return super(TfBaseTest, self)._get_policy_config(**kw)

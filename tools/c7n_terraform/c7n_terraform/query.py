@@ -1,6 +1,3 @@
-# Copyright The Cloud Custodian Authors.
-# SPDX-License-Identifier: Apache-2.0
-
 import logging
 
 from unittest.mock import MagicMock
@@ -10,10 +7,10 @@ from c7n.filters import FilterRegistry
 from c7n.query import sources, MaxResourceLimit
 
 from c7n_terraform.parser import Parser, TerraformVisitor, VariableResolver
+from c7n_terraform.filters.value import TerraformValueFilter
 
 
-log = logging.getLogger("custodian.terraform.query")
-
+log = logging.getLogger("c7n_terraform.query")
 # TODO: Make a NOOP Cache manager
 CacheManager = MagicMock()
 CacheManager.load.side_effect = [False]
@@ -27,10 +24,9 @@ class DescribeSource:
     def __init__(self, manager):
         self.manager = manager
 
-    def get_resources(self, query):
-        if query is None:
-            return self.query.blocks
-        return list(self.query.iter_blocks(tf_kind=query))
+    def get_resources(self, block):
+        cmd = self.query.iter_blocks if block else self.query.blocks
+        return [block.to_dict() for block in cmd(tf_kind=block)]
 
     def augment(self, resources):
         return resources
@@ -78,6 +74,9 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
     def get_cache_key(self, query):
         return None
 
+    def get_resource(self, resource_info):
+        return self.source.get(resource_info)
+
     @property
     def source_type(self):
         return self.data.get("source", "describe-tf")
@@ -92,11 +91,11 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
         return self.filter_resources(resources)
 
     def filter_resources(self, resources, event=None):
-        return [
-            resource
-            for resource in resources
-            if len(super().filter_resources([resource.data], event)) > 0
-        ]
+        matched_resources = []
+        for resource in resources:
+            if len(super().filter_resources([resource.data], event)) > 0:
+                matched_resources.append(resource)
+        return matched_resources
 
     def check_resource_limit(self, selection_count, population_count):
         """Check if policy's execution affects more resources then its limit."""

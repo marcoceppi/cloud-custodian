@@ -27,7 +27,8 @@ class Block(dict):
         return self[k]
 
     def to_dict(self):
-        return copy.deepcopy(self)
+        data = copy.deepcopy(self)
+        return data
 
 
 class VariableResolver:
@@ -499,7 +500,7 @@ class Parser:
                     self.tf_resources[f] = tf_data = file_parser(f)
                     modules.update(self._resolve_modules(f.parent, tf_data))
                 except Exception as e:
-                    self.log.info(f"error parsing {f}", exc_info=e)
+                    self.log.debug(f"error parsing {f}", exc_info=e)
                     self.errors[str(f)] = e
         for m in modules:
             if m not in self.seen_dirs:

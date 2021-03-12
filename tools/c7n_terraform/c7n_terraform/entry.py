@@ -9,4 +9,4 @@ def initialize_tf():
 
     # load shared registered resources
     import c7n_terraform.query
-    import c7n_terraform.resources.blocks  # noqa
+    import c7n_terraform.policy # noqa

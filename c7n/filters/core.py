@@ -560,6 +560,9 @@ class ValueFilter(BaseValueFilter):
         if self.op in ('in', 'not-in') and r is None:
             r = ()
 
+        # for the manipulation of children filters that extend this match function
+        self.r = r
+
         # value type conversion
         if self.vtype is not None:
             v, r = self.process_value_type(self.v, r, i)
