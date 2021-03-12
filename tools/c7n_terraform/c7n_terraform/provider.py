@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from unittest.mock import MagicMock
+import re
 
 from c7n.registry import PluginRegistry
 from c7n.provider import Provider, clouds
