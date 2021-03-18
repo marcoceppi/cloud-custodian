@@ -26,4 +26,4 @@ class ResourceLookup(QueryResourceManager):
         resources = self.source.get_resources("resource")
         resource_count = len(resources)
         resources = self.filter_resources(resources)
-        return [r for r in resources if r.provider_type == provider_type]
+        return resources

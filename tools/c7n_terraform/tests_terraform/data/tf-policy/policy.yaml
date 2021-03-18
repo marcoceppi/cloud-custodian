@@ -6,3 +6,13 @@ policies:
     op: "contains"
     value: "public-read"
     key: "acl"
+
+- name: test-provider-type
+  resource: tf.resource.*
+  filters:
+  - type: value
+    op: in
+    key: provider_type
+    value:
+    - "aws_s3_bucket"
+    - "aws_instance"

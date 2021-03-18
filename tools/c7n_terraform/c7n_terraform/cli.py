@@ -115,14 +115,10 @@ def run(
         for policy in collection:
             policy.ctx.options.path = module_path
             try:
-                resources, runtime, actiontime = policy()
+                resources = policy()
             except Exception:
                 printer.add_test_result(name, Status.error, policy, [])
                 continue
-
-            log.debug(
-                f" - Policy: {policy.name} count: {len(resources)} time: {runtime:.5f} seconds"
-            )
 
             if not resources:
                 printer.add_test_result(name, Status.success, policy, [])
