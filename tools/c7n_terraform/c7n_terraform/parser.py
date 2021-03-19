@@ -152,6 +152,8 @@ class HclLocator:
         return position
 
     def _enclosure_position(self, path, data_key):
+        # TODO: consider popping the name out of the data_key/token_queue so that
+        # enclosures have more context
         start_line, end_line = 0, 0
         token_queue = list(data_key)
         for cache_idx, (idx, line) in enumerate(self.line_cache[path]):
