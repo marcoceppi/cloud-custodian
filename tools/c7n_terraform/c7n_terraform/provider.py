@@ -105,10 +105,6 @@ class Terraform(Provider):
 
         return policy_collection
 
-    @staticmethod
-    def initialize_resource(resource_class):
-        resource_class.filter_registry.register('value', TerraformValueFilter)
-
     def get_session_factory(self, options):
         """Get a credential/session factory for api usage."""
         return Session()

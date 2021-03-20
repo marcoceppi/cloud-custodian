@@ -3,7 +3,6 @@ policies:
   resource: tf.resource.aws_s3_bucket
   filters:
   - type: "value"
-    op: "contains"
     value: "public-read"
     key: "acl"
 
