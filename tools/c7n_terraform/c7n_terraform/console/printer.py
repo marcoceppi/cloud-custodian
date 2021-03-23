@@ -1,0 +1,217 @@
+# Copyright The Cloud Custodian Authors.
+# SPDX-License-Identifier: Apache-2.0
+
+from xml.etree.ElementTree import Element, SubElement, tostring
+
+from rich import box
+from rich.console import RenderGroup
+from rich.table import Table
+from rich.panel import Panel
+from rich.text import Text
+from rich.rule import Rule
+
+from c7n_terraform.console.base import console as default_console, source_contexts, Status
+
+
+class TestCase:
+
+    def __init__(self, name):
+        self.name = name
+        self.results = []
+
+    def start(self):
+        pass
+
+    def add_result(self, result, policy, resources):
+        self.results.append({
+            'resources': resources,
+            'policy': policy,
+            'result': result,
+        })
+
+    def finish(self):
+        pass
+
+
+class Printer:
+
+    def __init__(self, console=None):
+        self.console = console or default_console
+        self.cases = {}
+        self.summary = {}
+
+    def add_test_case(self, name):
+        if name not in self.cases:
+            self.cases[name] = TestCase(name)
+
+        return self.cases[name]
+
+    def start_test_case(self, name):
+        if name not in self.cases:
+            return self.add_test_case(name)
+        self.cases[name].start()
+
+        return self.cases[name]
+
+    def add_test_result(self, name, result, policy, resources):
+        self.cases[name].add_result(result, policy, resources)
+        if result not in self.summary:
+            self.summary[result] = 0
+        self.summary[result] += 1
+        return self.cases[name]
+
+    def complete_test_case(self, name):
+        self.cases[name].finish()
+
+    def print_summary(self):
+        pass
+
+
+class FullPrinter(Printer):
+
+    _padding = None
+
+    def __init__(self, console=None):
+        super().__init__(console)
+        self._grid = {}
+
+    @property
+    def padding(self):
+        if self._padding:
+            return self._padding
+
+        pad = 0
+        for case in self.cases.values():
+            l = len(case.name)
+            if l > pad:
+                pad = l
+
+        self._padding = pad + 2
+        return self._padding
+
+    def add_test_case(self, name):
+        super().add_test_case(name)
+        self._grid[name] = Table(
+            "Policy",
+            "Context",
+            show_header=False,
+            show_edge=False,
+            expand=True,
+            show_lines=True,
+            box=box.HEAVY,
+        )
+
+    def start_test_case(self, name):
+        super().start_test_case(name)
+        self.console.print(name, style="cyan", end=" " * (self.padding - len(name)))
+
+    def add_test_result(self, name, result, policy, resources):
+        c = super().add_test_result(name, result, policy, resources)
+        self.console.print(Status.icon(result), end="")
+        if result == Status.success:
+            return c
+
+        self._grid[name].add_row(
+            f"[bold]{policy.name}[/]\n\n[bold]Description: [/]{policy.data.get('description', '')}",
+            RenderGroup(*[source_contexts(resource, prefix=name) for resource in resources]),
+        )
+
+        return c
+
+    def complete_test_case(self, name):
+        super().complete_test_case(name)
+        self.console.print("")
+
+    def build_summary_title(self):
+        title = Text()
+        cur = 0
+        length = len(self.summary)
+        for result, count in self.summary.items():
+            if count < 1:
+                continue
+            title.append(f"{count} {result.capitalize()}", style=result)
+            cur += 1
+            if cur < length:
+                title.append(", ")
+
+        return title
+
+    def print_summary(self):
+        self.console.print(Panel(Rule(self.build_summary_title()), width=150, box=box.SIMPLE))
+
+        cases = self.cases.values()
+        for case in self.cases.values():
+            failures = any([result["result"] != Status.success for result in case.results])
+
+            if not failures:
+                continue
+
+            self.console.print(
+                Panel(
+                    self._grid[case.name],
+                    title=Text(case.name, style="cyan bold"),
+                    border_style="red",
+                    width=150,
+                )
+            )
+
+
+class JUnitXMLOutputReporter:
+    def __init__(self, printer):
+        self.cases = printer.cases
+        self.root = self.build_root(
+            errors=printer.summary.get(Status.error, 0),
+            failures=printer.summary.get(Status.fail, 0),
+            successes=printer.summary.get(Status.success, 0),
+            time=1,
+        )
+
+    def build_root(self, successes, failures, errors, time):
+        attribs = {
+            "errors": str(errors),
+            "failures": str(failures),
+            "tests": str(len(self.cases)),
+            "time": str(time),
+        }
+
+        return Element("testsuites", attribs)
+
+    def build_test_suite(self, case):
+        attribs = {
+            "id": case.name,
+            "tests": "0",
+            "time": "0.01",
+            "package": case.name,
+            "name": case.name,
+            "hostname": "localhost",
+            "failures": "0",
+            "errors": "0",
+            "tests": str(len(case.results)),
+        }
+
+        ts = Element("testsuite", attribs)
+
+        for result in case.results:
+            case_attr = {
+                "name": result["policy"].name,
+                "status": result["result"],
+                "type": result["result"],
+            }
+            tc = SubElement(ts, "testcase", case_attr)
+            if result["result"] != Status.success:
+                tc.set("classname", ".".join(result["resources"][0]["data_path"]))
+                tc.set("file", str(result["resources"][0]["path"]))
+                tc.set("line", str(result["resources"][0]["source"]["lines"][0][0]))
+
+                tc_attr = {
+                    "message": result["policy"].data.get("description"),
+                    "type": result["result"]
+                }
+
+                tc.append(Element(result["result"], tc_attr))
+        return ts
+
+    def report(self):
+        for case in self.cases.values():
+            self.root.append(self.build_test_suite(case))
+        return b'<?xml version="1.0" encoding="utf-8"?>' + tostring(self.root)

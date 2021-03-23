@@ -3,6 +3,15 @@ policies:
   resource: tf.resource.aws_s3_bucket
   filters:
   - type: "value"
-    op: "contains"
     value: "public-read"
     key: "acl"
+
+- name: test-provider-type
+  resource: tf.resource.*
+  filters:
+  - type: value
+    op: in
+    key: tf:resource
+    value:
+    - "aws_s3_bucket"
+    - "aws_instance"

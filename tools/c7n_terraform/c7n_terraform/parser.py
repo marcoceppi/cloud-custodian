@@ -27,7 +27,8 @@ class Block(dict):
         return self[k]
 
     def to_dict(self):
-        return copy.deepcopy(self)
+        data = copy.deepcopy(self)
+        return data
 
 
 class VariableResolver:
@@ -151,6 +152,7 @@ class HclLocator:
         return position
 
     def _enclosure_position(self, path, data_key):
+        # TODO: consider expanding the enclosure for more context of the diff output
         start_line, end_line = 0, 0
         token_queue = list(data_key)
         for cache_idx, (idx, line) in enumerate(self.line_cache[path]):
@@ -311,7 +313,8 @@ class TerraformVisitor:
         provider_type = next(iter(data_block))
         for name, resource in data_block[provider_type].items():
             data_path = ["resource", provider_type, name]
-            resource["_id"] = ".".join(data_path)
+            resource["tf:id"] = ".".join(data_path)
+            resource["tf:resource"] = provider_type
             yield Block(
                 type="resource",
                 provider_type=provider_type,
@@ -499,7 +502,7 @@ class Parser:
                     self.tf_resources[f] = tf_data = file_parser(f)
                     modules.update(self._resolve_modules(f.parent, tf_data))
                 except Exception as e:
-                    self.log.info(f"error parsing {f}", exc_info=e)
+                    self.log.debug(f"error parsing {f}", exc_info=e)
                     self.errors[str(f)] = e
         for m in modules:
             if m not in self.seen_dirs:
