@@ -11,7 +11,7 @@ policies:
   filters:
   - type: value
     op: in
-    key: resource
+    key: tf:resource
     value:
     - "aws_s3_bucket"
     - "aws_instance"

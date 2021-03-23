@@ -19,7 +19,7 @@ class Resource(QueryResourceManager):
 
 @resources.register("resource.*", match=re.compile(r"resource\..*"))
 class ResourceLookup(QueryResourceManager):
-    id = "_id"
+    id = "tf:id"
 
     def resources(self, query=None):
         _, provider_type = self.data.get("resource").rsplit(".", 1)

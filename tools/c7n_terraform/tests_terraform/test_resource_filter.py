@@ -16,7 +16,7 @@ class TestResourceFilter(TfBaseTest):
                 'filters': [
                     {
                         'type': 'value',
-                        'key': 'resource',
+                        'key': 'tf:resource',
                         'value': 'aws_s3_bucket'
                     }
                 ]

@@ -152,8 +152,7 @@ class HclLocator:
         return position
 
     def _enclosure_position(self, path, data_key):
-        # TODO: consider popping the name out of the data_key/token_queue so that
-        # enclosures have more context
+        # TODO: consider expanding the enclosure for more context of the diff output
         start_line, end_line = 0, 0
         token_queue = list(data_key)
         for cache_idx, (idx, line) in enumerate(self.line_cache[path]):
@@ -314,8 +313,8 @@ class TerraformVisitor:
         provider_type = next(iter(data_block))
         for name, resource in data_block[provider_type].items():
             data_path = ["resource", provider_type, name]
-            resource["_id"] = ".".join(data_path)
-            resource["resource"] = provider_type
+            resource["tf:id"] = ".".join(data_path)
+            resource["tf:resource"] = provider_type
             yield Block(
                 type="resource",
                 provider_type=provider_type,
